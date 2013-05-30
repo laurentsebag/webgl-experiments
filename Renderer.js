@@ -224,7 +224,7 @@ var Renderer;
                   gl.STATIC_DRAW);
     cubeColors.itemSize = 4;
     cubeColors.numItems = 36;
-    this.cubeColors = cubePositions;
+    this.cubeColors = cubeColors;
 
     cubeNormals = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeNormals);
@@ -276,7 +276,7 @@ var Renderer;
     mat4.lookAt(viewMatrix, eye, look, up);
     this.viewMatrix = viewMatrix;
 
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
 
@@ -399,10 +399,8 @@ var Renderer;
     mat4.rotate(lightModelMatrix, lightModelMatrix, angleInRadians, [0, 1, 0]);
     mat4.translate(lightModelMatrix, lightModelMatrix, [0, 0, 2]);
 
-    mat4.multiply(lightPosInWorldSpace, lightPosInWorldSpace, lightModelMatrix,
-                  lightPosInModelSpace);
-    mat4.multiply(lightPosInEyeSpace, lightPosInEyeSpace, viewMatrix,
-                  lightPosInWorldSpace);
+    mat4.multiply(lightPosInWorldSpace, lightModelMatrix, lightPosInModelSpace);
+    mat4.multiply(lightPosInEyeSpace, viewMatrix, lightPosInWorldSpace);
 
     // Draw some cubes.
     mat4.identity(modelMatrix);
@@ -422,6 +420,7 @@ var Renderer;
 
     mat4.identity(modelMatrix);
     mat4.translate(modelMatrix, modelMatrix, [0, -4, -7]);
+    mat4.rotate(modelMatrix, modelMatrix, angleInRadians, [0, 0, -1]);
     this.drawCube(gl);
 
     mat4.identity(modelMatrix);
@@ -507,7 +506,7 @@ var Renderer;
 
     // Since we are not using a buffer object, disable vertex arrays for this
     // attribute.
-    gl.disableVertexAttribArray(pointPositionHandle);
+    //gl.disableVertexAttribArray(pointPositionHandle);
 
     // Pass in the transformation matrix.
     mat4.multiply(mvpMatrix, viewMatrix, lightModelMatrix);
