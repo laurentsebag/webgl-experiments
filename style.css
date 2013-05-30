@@ -1,0 +1,11 @@
+html {
+  font-size: 100%;
+}
+
+h1 {
+  color: orange;
+}
+
+canvas {
+  border: 1px solid black;
+}
