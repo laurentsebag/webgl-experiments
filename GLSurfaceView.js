@@ -2,6 +2,10 @@
 var GLSurfaceView;
 (function () {
   'use strict';
+  var requestAnimationFrame = window.requestAnimationFrame ||
+                              window.mozRequestAnimationFrame ||
+                              window.webkitRequestAnimationFrame ||
+                              window.msRequestAnimationFrame;
   GLSurfaceView = function (width, height) {
     var canvas = document.createElement('canvas'),
       gl = canvas.getContext('webgl') ||
@@ -13,10 +17,11 @@ var GLSurfaceView;
         }
         requestAnimationFrame(animate);
       };
-    if (height !== undefined && width !== undefined) {
-      canvas.height = height;
-      canvas.width = width;
+    if (height === undefined || width === undefined) {
+      throw "GLSurfaceView: Missing argument width or height";
     }
+    canvas.height = height;
+    canvas.width = width;
     this.el = canvas;
     this.gl = gl;
 
