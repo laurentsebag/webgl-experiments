@@ -178,7 +178,9 @@ var Renderer;
         "   diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));",
         // Multiply the color by the illumination level. It will be
         // interpolated across the triangle.
-        "   v_Color = a_Color * diffuse;",
+        "   v_Color = a_Color * max(diffuse, 0.12);",
+        // Do not change the transparency of the object
+        "   v_Color = vec4(v_Color[0], v_Color[1], v_Color[2], a_Color[3]);",
         // gl_Position is a special variable used to store the final position.
         // Multiply the vertex by the matrix to get the final point in
         // normalized screen coordinates.
@@ -268,8 +270,7 @@ var Renderer;
         "precision mediump float;",
         "void main()",
         "{",
-        "   gl_FragColor = vec4(1.0,",
-        "   1.0, 1.0, 1.0);",
+        "   gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);",
         "}"
       ].join("\n");
 
