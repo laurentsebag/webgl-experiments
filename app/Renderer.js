@@ -143,12 +143,11 @@ var Renderer;
       0.0, -1.0, 0.0
     ],
     getVertexShader = function () {
-      var vertexShader = [
+      var perPixelVertexShader = [
         "uniform mat4 u_MVPMatrix;", // A constant representing the combined
                                      // model/view/projection matrix.
         "uniform mat4 u_MVMatrix;",  // A constant representing the combined
                                      //model/view matrix.
-        "uniform vec3 u_LightPos;",  // The position of the light in eye space.
 
         "attribute vec4 a_Position;", // Per-vertex position information we
                                       //will pass in.
@@ -157,54 +156,64 @@ var Renderer;
         "attribute vec3 a_Normal;", // Per-vertex normal information we will
                                     // pass in.
 
-        "varying vec4 v_Color;", // This will be passed into the fragment
-                                 // shader.
+        // This will be passed into the fragment shader
+        "varying vec3 v_Position;",
+        "varying vec4 v_Color;",
+        "varying vec3 v_Normal;",
 
         "void main()", // The entry point for our vertex shader.
         "{",
         // Transform the vertex into eye space.
-        "   vec3 modelViewVertex = vec3(u_MVMatrix * a_Position);",
-        // Transform the normal's orientation into eye space.
-        "   vec3 modelViewNormal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));",
-        // Will be used for attenuation.
-        "   float distance = length(u_LightPos - modelViewVertex);",
-        // Get a lighting direction vector from the light to the vertex.
-        "   vec3 lightVector = normalize(u_LightPos - modelViewVertex);",
-        // Calculate the dot product of the light vector and vertex normal. If
-        // the normal and light vector are
-        // pointing in the same direction then it will get max illumination.
-        "   float diffuse = max(dot(modelViewNormal, lightVector), 0.1);",
-        // Attenuate the light based on distance.
-        "   diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));",
-        // Multiply the color by the illumination level. It will be
-        // interpolated across the triangle.
-        "   v_Color = a_Color * max(diffuse, 0.12);",
-        // Do not change the transparency of the object
-        "   v_Color = vec4(v_Color[0], v_Color[1], v_Color[2], a_Color[3]);",
-        // gl_Position is a special variable used to store the final position.
+        "   v_Position = vec3(u_MVMatrix * a_Position);",
+        // Pass through the color
+        "   v_Color = a_Color;",
+        // Transform the normal's orientation into eye space
+        "   v_Normal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));",
         // Multiply the vertex by the matrix to get the final point in
         // normalized screen coordinates.
         "   gl_Position = u_MVPMatrix * a_Position;",
         "}"
       ];
-      return vertexShader.join("\n");
+      return perPixelVertexShader.join("\n");
     },
     getFragmentShader = function () {
-      var fragmentShader = [
+      var perPixelFragmentShader = [
         // Set the default precision to medium. We don't need as high of a
         // precision in the fragment shader.
         "precision mediump float;",
-        // This is the color from the vertex shader interpolated across the 
+        // The position of the light in eye space
+        "uniform vec3 u_LightPos;",
+        // Interpolated position for this fragment
+        "varying vec3 v_Position;",
+        // This is the color from the vertex shader interpolated across the
         // triangle per fragment.
         "varying vec4 v_Color;",
+        // Interpolated normal for this fragment shader
+        "varying vec3 v_Normal;",
         // The entry point for our fragment shader.
+        "float alpha;",
+        "vec4 color;",
+
         "void main()",
         "{",
-        // Pass the color directly through the pipeline.
-        "   gl_FragColor = v_Color;",
+        // Will be used for attenuation.
+        "   float distance = length(u_LightPos - v_Position);",
+        // Get a lighting direction vector from the light to the vertex.
+        "   vec3 lightVector = normalize(u_LightPos - v_Position);",
+        // Calculate the dot product of the light vector and vertex normal. If
+        // the normal and light vector are pointing in the same direction then
+        // it will get max illumination.
+        "   float diffuse = max(dot(v_Normal, lightVector), 0.1);",
+        // Add attenuation.
+        "   diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));",
+        // Multiply the color by the diffuse illumination level to get final
+        // output color.
+        "   alpha = v_Color[3];",
+        "   color = v_Color * max(diffuse, 0.12);",
+        "   gl_FragColor = vec4(vec3(color), alpha);",
         "}"
       ];
-      return fragmentShader.join("\n");
+      return perPixelFragmentShader.join("\n");
     };
 
   Renderer = function (gl) {
