@@ -209,7 +209,7 @@ var Renderer;
         // Multiply the color by the diffuse illumination level to get final
         // output color.
         "   alpha = v_Color[3];",
-        "   color = v_Color * max(diffuse, 0.30);",
+        "   color = v_Color * max(diffuse, 0.20);",
         "   gl_FragColor = vec4(vec3(color), alpha);",
         "}"
       ];
@@ -220,6 +220,8 @@ var Renderer;
     var cubePositions,
       cubeColors,
       cubeNormals;
+
+    this.objectList = [];
 
     cubePositions = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, cubePositions);
@@ -347,8 +349,6 @@ var Renderer;
       alert("Could not initialise shaders");
       return;
     }
-
-    this.spaceship = new Spaceship(gl, this);
   };
   Renderer.prototype.onSurfaceChanged = function (gl, width, height) {
     var ratio = width / height,
@@ -373,6 +373,9 @@ var Renderer;
       angleInRadians,
       perVertexProgramHandle = this.perVertexProgramHandle,
       time,
+      i,
+      length,
+      objectList = this.objectList,
       lightModelMatrix = this.lightModelMatrix,
       lightPosInEyeSpace = this.lightPosInEyeSpace,
       lightPosInWorldSpace = this.lightPosInWorldSpace,
@@ -418,7 +421,10 @@ var Renderer;
     mat4.rotate(modelMatrix, modelMatrix, 1, [1, 1, 0]);
     this.drawCube(gl);
 
-    this.spaceship.onDrawFrame(gl);
+    length = objectList.length;
+    for (i = 0; i < length; i += 1) {
+      objectList[i].onDrawFrame(gl);
+    }
 
     // Draw a point to indicate the light.
     gl.useProgram(this.pointProgramHandle);
@@ -507,5 +513,9 @@ var Renderer;
 
     // Draw the point.
     gl.drawArrays(gl.POINTS, 0, 1);
+  };
+  Renderer.prototype.addObject = function (object) {
+    var objectList = this.objectList;
+    objectList.push(object);
   };
 }());

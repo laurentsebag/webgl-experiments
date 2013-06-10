@@ -12,8 +12,8 @@ var GLSurfaceView;
         canvas.getContext('experimental-webgl'),
       that = this,
       animate = function () {
-        if (that.renderer) {
-          that.renderer.onDrawFrame(that.gl);
+        if (that.controller) {
+          that.controller.onDrawFrame(that.gl);
         }
         requestAnimationFrame(animate);
       };
@@ -31,7 +31,7 @@ var GLSurfaceView;
   GLSurfaceView.prototype.setSize = function (width, height) {
     var canvas = this.el,
       gl = this.gl,
-      renderer = this.renderer;
+      controller = this.controller;
     if (width === undefined) {
       width = canvas.width;
     }
@@ -40,24 +40,24 @@ var GLSurfaceView;
     }
     canvas.width = width;
     canvas.height = height;
-    if (renderer !== undefined) {
-      renderer.onSurfaceChanged(gl, width, height);
+    if (controller !== undefined) {
+      controller.onSurfaceChanged(gl, width, height);
     }
     return this;
   };
-  GLSurfaceView.prototype.setRenderer = function (renderer) {
+  GLSurfaceView.prototype.setController = function (controller) {
     var canvas = this.el,
       gl = this.gl;
-    if (renderer === undefined) {
-      throw 'Missing argument renderer';
+    if (controller === undefined) {
+      throw 'Missing argument controller';
     }
-    if (typeof renderer.onSurfaceCreated !== 'function' ||
-        typeof renderer.onSurfaceChanged !== 'function' ||
-        typeof renderer.onDrawFrame !== 'function') {
-      throw 'Wrong prototype renderer';
+    if (typeof controller.onSurfaceCreated !== 'function' ||
+        typeof controller.onSurfaceChanged !== 'function' ||
+        typeof controller.onDrawFrame !== 'function') {
+      throw 'Wrong prototype controller';
     }
-    this.renderer = renderer;
-    renderer.onSurfaceChanged(gl, canvas.width, canvas.height);
-    renderer.onSurfaceCreated(gl);
+    this.controller = controller;
+    controller.onSurfaceChanged(gl, canvas.width, canvas.height);
+    controller.onSurfaceCreated(gl);
   };
 }());

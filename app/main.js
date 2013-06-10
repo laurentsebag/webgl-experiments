@@ -1,14 +1,14 @@
 /*jslint browser: true*/
-/*global Renderer, GLSurfaceView*/
+/*global GameController, Renderer, GLSurfaceView*/
 (function () {
   'use strict';
 
   var view = new GLSurfaceView(800, 600),
-    renderer = new Renderer(view.gl),
+    gameController = new GameController(view.gl),
     resizeView = function () {
       view.setSize(window.innerWidth - 40);
     };
-  view.setRenderer(renderer);
+  view.setController(gameController);
 
   window.onload = function () {
     document.getElementsByTagName('body')[0].appendChild(view.el);

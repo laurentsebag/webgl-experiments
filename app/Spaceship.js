@@ -2,7 +2,7 @@
 var Spaceship;
 (function () {
   'use strict';
-  Spaceship = function (gl, renderer) {
+  Spaceship = function (gl) {
     var shipPositionData = [
         1, -1, 0,
         0, 1, -0.5,
@@ -32,12 +32,6 @@ var Spaceship;
       shipPositions,
       shipColors;
 
-    this.modelMatrix = renderer.modelMatrix;
-    this.viewMatrix = renderer.viewMatrix;
-    this.mvpMatrix = renderer.mvpMatrix;
-    this.perVertexProgramHandle = renderer.perVertexProgramHandle;
-    this.projectionMatrix = renderer.projectionMatrix;
-
     shipPositions = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, shipPositions);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(shipPositionData),
@@ -53,6 +47,13 @@ var Spaceship;
     shipColors.itemSize = 4;
     shipColors.numItems = shipColorData.length / shipColors.itemSize;
     this.shipColors = shipColors;
+  };
+  Spaceship.prototype.setRenderer = function (renderer) {
+    this.modelMatrix = renderer.modelMatrix;
+    this.viewMatrix = renderer.viewMatrix;
+    this.mvpMatrix = renderer.mvpMatrix;
+    this.perVertexProgramHandle = renderer.perVertexProgramHandle;
+    this.projectionMatrix = renderer.projectionMatrix;
   };
   Spaceship.prototype.onDrawFrame = function (gl) {
     var modelMatrix = this.modelMatrix,
@@ -72,7 +73,13 @@ var Spaceship;
 
     // Draw the spaceship
     mat4.identity(modelMatrix);
-    mat4.translate(modelMatrix, modelMatrix, [-0, -2, -7]);
+    if (this.moved === 0) {
+      mat4.translate(modelMatrix, modelMatrix, [-0, -2, -7]);
+    } else if (this.moved === 1) {
+      mat4.translate(modelMatrix, modelMatrix, [-4, -2, -7]);
+    } else {
+      mat4.translate(modelMatrix, modelMatrix, [6, -3, -9]);
+    }
     mat4.rotate(modelMatrix, modelMatrix, (Date.now() % 4000) *
                 (2 * Math.PI) / 4000, [0, 1, 0]);
     mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]);
@@ -119,6 +126,13 @@ var Spaceship;
 
     // Draw the ship.
     gl.drawArrays(gl.TRIANGLES, 0, shipPositions.numItems);
+  };
+  Spaceship.prototype.move = function () {
+    if (this.moved !== undefined) {
+      this.moved += 1;
+    } else {
+      this.moved = 0;
+    }
   };
 
 }());
