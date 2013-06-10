@@ -1,5 +1,5 @@
 /*jslint browser: true*/
-/*global Float32Array, mat2, mat4*/
+/*global Float32Array, mat2, mat4, Spaceship*/
 var Renderer;
 (function () {
   'use strict';
@@ -7,7 +7,7 @@ var Renderer;
   var cubePositionData = [
     // X, Y, Z
     // Front face
-    -1.0, 1.0, 1.0,
+    -1, 1.0, 1.0,
     -1.0, -1.0, 1.0,
     1.0, 1.0, 1.0,
     -1.0, -1.0, 1.0,
@@ -209,7 +209,7 @@ var Renderer;
         // Multiply the color by the diffuse illumination level to get final
         // output color.
         "   alpha = v_Color[3];",
-        "   color = v_Color * max(diffuse, 0.12);",
+        "   color = v_Color * max(diffuse, 0.30);",
         "   gl_FragColor = vec4(vec3(color), alpha);",
         "}"
       ];
@@ -272,7 +272,7 @@ var Renderer;
         "{",
         "   gl_Position = u_MVPMatrix",
         "               * a_Position;",
-        "   gl_PointSize = 5.0;",
+        "   gl_PointSize = 2.0;",
         "}"
       ].join("\n"),
       pointFragmentShader = [
@@ -348,6 +348,7 @@ var Renderer;
       return;
     }
 
+    this.spaceship = new Spaceship(gl, this);
   };
   Renderer.prototype.onSurfaceChanged = function (gl, width, height) {
     var ratio = width / height,
@@ -405,38 +406,19 @@ var Renderer;
 
     // Calculate position of the light. Rotate and then push into the distance.
     mat4.identity(lightModelMatrix, 0);
-    mat4.translate(lightModelMatrix, lightModelMatrix, [0, 0, -5]);
-    mat4.rotate(lightModelMatrix, lightModelMatrix, angleInRadians, [0, 1, 0]);
-    mat4.translate(lightModelMatrix, lightModelMatrix, [0, 0, 2]);
+    mat4.translate(lightModelMatrix, lightModelMatrix, [2, 2, -4]);
 
     mat4.multiply(lightPosInWorldSpace, lightModelMatrix, lightPosInModelSpace);
     mat4.multiply(lightPosInEyeSpace, viewMatrix, lightPosInWorldSpace);
 
     // Draw some cubes.
     mat4.identity(modelMatrix);
-    mat4.translate(modelMatrix, modelMatrix, [4, 0, -7]);
-    mat4.rotate(modelMatrix, modelMatrix, angleInRadians, [1, 0, 0]);
+    mat4.translate(modelMatrix, modelMatrix, [1, 1, -7]);
+    //mat4.rotate(modelMatrix, modelMatrix, angleInRadians, [1, 0, 0]);
+    mat4.rotate(modelMatrix, modelMatrix, 1, [1, 1, 0]);
     this.drawCube(gl);
 
-    mat4.identity(modelMatrix);
-    mat4.translate(modelMatrix, modelMatrix, [-4, 0, -7]);
-    mat4.rotate(modelMatrix, modelMatrix, angleInRadians, [0, 1, 0]);
-    this.drawCube(gl);
-
-    mat4.identity(modelMatrix);
-    mat4.translate(modelMatrix, modelMatrix, [0, 4, -7]);
-    mat4.rotate(modelMatrix, modelMatrix, angleInRadians, [0, 0, 1]);
-    this.drawCube(gl);
-
-    mat4.identity(modelMatrix);
-    mat4.translate(modelMatrix, modelMatrix, [0, -4, -7]);
-    mat4.rotate(modelMatrix, modelMatrix, angleInRadians, [0, 0, -1]);
-    this.drawCube(gl);
-
-    mat4.identity(modelMatrix);
-    mat4.translate(modelMatrix, modelMatrix, [0, 0, -5]);
-    mat4.rotate(modelMatrix, modelMatrix, angleInRadians, [1, 1, 0]);
-    this.drawCube(gl);
+    this.spaceship.onDrawFrame(gl);
 
     // Draw a point to indicate the light.
     gl.useProgram(this.pointProgramHandle);
