@@ -1,4 +1,4 @@
-/*globals requestAnimationFrame*/
+/*globals requestAnimationFrame, GameConsts*/
 var GLSurfaceView;
 (function () {
   'use strict';
@@ -24,6 +24,53 @@ var GLSurfaceView;
     canvas.width = width;
     this.el = canvas;
     this.gl = gl;
+
+    document.onkeydown = function (e) {
+      var action,
+        controller = that.controller;
+      switch (e.keyCode) {
+      case 37:
+        action = GameConsts.KEY_LEFT;
+        break;
+      case 38:
+        action = GameConsts.KEY_UP;
+        break;
+      case 39:
+        action = GameConsts.KEY_RIGHT;
+        break;
+      case 40:
+        action = GameConsts.KEY_DOWN;
+        break;
+      default:
+        action = -1;
+      }
+      if (action !== -1 && controller !== undefined) {
+        controller.onKeyActionStart(action);
+      }
+    };
+    document.onkeyup = function (e) {
+      var action,
+        controller = that.controller;
+      switch (e.keyCode) {
+      case 37:
+        action = GameConsts.KEY_LEFT;
+        break;
+      case 38:
+        action = GameConsts.KEY_UP;
+        break;
+      case 39:
+        action = GameConsts.KEY_RIGHT;
+        break;
+      case 40:
+        action = GameConsts.KEY_DOWN;
+        break;
+      default:
+        action = -1;
+      }
+      if (action !== -1 && controller !== undefined) {
+        controller.onKeyActionEnd(action);
+      }
+    };
 
     animate();
     return this;

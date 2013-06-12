@@ -47,6 +47,11 @@ var Spaceship;
     shipColors.itemSize = 4;
     shipColors.numItems = shipColorData.length / shipColors.itemSize;
     this.shipColors = shipColors;
+    this.turnAngle = 0;
+    this.speed = 0;
+    this.speedTarget = 10;
+    this.rotationAngle = 0;
+    this.lastTime = Date.now();
   };
   Spaceship.prototype.setRenderer = function (renderer) {
     this.modelMatrix = renderer.modelMatrix;
@@ -58,7 +63,17 @@ var Spaceship;
   Spaceship.prototype.onDrawFrame = function (gl) {
     var modelMatrix = this.modelMatrix,
       viewMatrix = this.viewMatrix,
-      perVertexProgramHandle = this.perVertexProgramHandle;
+      perVertexProgramHandle = this.perVertexProgramHandle,
+      time = Date.now(),
+      turnAngleTarget = this.turnAngleTarget,
+      turnAngle = this.turnAngle,
+      speed = this.speed,
+      speedTarget = this.speedTarget,
+      elapsed = time - this.lastTime,
+      rotationAngle = this.rotationAngle,
+      speedFactor;
+
+    this.lastTime = time;
 
     gl.useProgram(this.perVertexProgramHandle);
 
@@ -71,18 +86,29 @@ var Spaceship;
     this.colorHandle = gl.getAttribLocation(perVertexProgramHandle,
                                             "a_Color");
 
+    if (turnAngle > turnAngleTarget + 0.01) {
+      this.turnAngle -= (elapsed / 800);
+    } else if (turnAngle < turnAngleTarget - 0.01) {
+      this.turnAngle += (elapsed / 800);
+    }
+
+    if (speed > speedTarget + 0.1) {
+      this.speed -= (elapsed / 120);
+    } else if (speed < speedTarget - 0.1) {
+      this.speed += (elapsed / 80);
+    }
+    speedFactor = this.speed * this.speed / 8000;
+    this.rotationAngle += (elapsed / 8000) + speedFactor;
+
     // Draw the spaceship
     mat4.identity(modelMatrix);
-    if (this.moved === 0) {
-      mat4.translate(modelMatrix, modelMatrix, [-0, -2, -7]);
-    } else if (this.moved === 1) {
-      mat4.translate(modelMatrix, modelMatrix, [-4, -2, -7]);
-    } else {
-      mat4.translate(modelMatrix, modelMatrix, [6, -3, -9]);
-    }
-    mat4.rotate(modelMatrix, modelMatrix, (Date.now() % 4000) *
-                (2 * Math.PI) / 4000, [0, 1, 0]);
-    mat4.translate(modelMatrix, modelMatrix, [0, 0, 0.5]);
+    mat4.translate(modelMatrix, modelMatrix, [-0, -2, -7]);
+    mat4.rotate(modelMatrix, modelMatrix, Math.PI * 90 / 180, [0, 1, 0]);
+    mat4.translate(modelMatrix, modelMatrix, [0, -1, 0]);
+    mat4.rotate(modelMatrix, modelMatrix, turnAngle, [1, 0, 0]);
+    mat4.rotate(modelMatrix, modelMatrix, -Math.PI * 90 / 180, [0, 1, 0]);
+    mat4.rotate(modelMatrix, modelMatrix, rotationAngle, [0, 1, 0]);
+    mat4.translate(modelMatrix, modelMatrix, [0, 1, 0.5]);
     this.draw(gl);
   };
   Spaceship.prototype.draw = function (gl) {
@@ -127,12 +153,22 @@ var Spaceship;
     // Draw the ship.
     gl.drawArrays(gl.TRIANGLES, 0, shipPositions.numItems);
   };
-  Spaceship.prototype.move = function () {
-    if (this.moved !== undefined) {
-      this.moved += 1;
-    } else {
-      this.moved = 0;
-    }
+  Spaceship.prototype.headLeft = function () {
+    this.turnAngleTarget = -45 * Math.PI / 180;
   };
-
+  Spaceship.prototype.headRight = function () {
+    this.turnAngleTarget = 45 * Math.PI / 180;
+  };
+  Spaceship.prototype.headStraight = function () {
+    this.turnAngleTarget = 0;
+  };
+  Spaceship.prototype.speedUp = function () {
+    this.speedTarget = 100;
+  };
+  Spaceship.prototype.slowDown = function () {
+    this.speedTarget = 10;
+  };
+  Spaceship.prototype.brake = function () {
+    this.speedTarget = 1;
+  }
 }());

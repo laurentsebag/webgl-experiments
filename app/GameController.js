@@ -1,27 +1,17 @@
-/*global Renderer, Spaceship*/
+/*global Renderer, Spaceship, GameConsts*/
 var GameController;
 (function () {
   'use strict';
   GameController = function (gl) {
     var renderer = new Renderer(gl),
-      spaceship = new Spaceship(gl, renderer),
-      spaceship2 = new Spaceship(gl, renderer);
+      spaceship = new Spaceship(gl, renderer);
 
     this.renderer = renderer;
     this.spaceship = spaceship;
-    this.spaceship2 = spaceship2;
 
-    setTimeout(function () {
-      renderer.addObject(spaceship2);
-      spaceship2.move();
-    }, 1000);
-    setTimeout(function () {
-      spaceship2.move();
-    }, 3000);
     renderer.addObject(spaceship);
   };
   GameController.prototype.onKeyPressed = function (key) {
-    this.spaceship.move();
   };
   GameController.prototype.onSurfaceCreated = function (gl) {
     this.renderer.onSurfaceCreated(gl);
@@ -30,9 +20,35 @@ var GameController;
     var renderer = this.renderer;
     renderer.onSurfaceChanged(gl, width, height);
     this.spaceship.setRenderer(renderer);
-    this.spaceship2.setRenderer(renderer);
   };
   GameController.prototype.onDrawFrame = function (gl) {
     this.renderer.onDrawFrame(gl);
+  };
+  GameController.prototype.onKeyActionStart = function (key) {
+    switch (key) {
+    case GameConsts.KEY_LEFT:
+      this.spaceship.headLeft();
+      break;
+    case GameConsts.KEY_RIGHT:
+      this.spaceship.headRight();
+      break;
+    case GameConsts.KEY_UP:
+      this.spaceship.speedUp();
+      break;
+    case GameConsts.KEY_DOWN:
+      this.spaceship.brake();
+      break;
+    }
+  };
+  GameController.prototype.onKeyActionEnd = function (key) {
+    switch (key) {
+    case GameConsts.KEY_LEFT:
+    case GameConsts.KEY_RIGHT:
+      this.spaceship.headStraight();
+      break;
+    case GameConsts.KEY_UP:
+    case GameConsts.KEY_DOWN:
+      this.spaceship.slowDown();
+    }
   };
 }());
