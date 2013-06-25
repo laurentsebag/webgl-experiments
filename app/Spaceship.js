@@ -1,44 +1,62 @@
-/*global Float32Array, mat4 */
+/*global Uint16Array, Float32Array, mat4 */
 var Spaceship;
 (function () {
   'use strict';
   Spaceship = function (gl) {
-    var shipPositionData = [
-        1, -1, 0,
-        0, 1, -0.5,
-        -1, -1, 0,
-
-        -1, -1, 0,
-        0, 1, -0.5,
-        0, -1, -1.75,
-
-        0, -1, -1.75,
-        0, 1, -0.5,
-        1, -1, 0
+    var shipVerticesData = [
+      2, -2, -2,
+      2, -2, 2,
+      -2, -2, 2,
+      -2, -2, -2,
+      2, 2, -2,
+      2, 2, 2,
+      -2, 2, 2,
+      -2, 2, -2
+    ],
+      shipVertexPositionsData = [
+        0, 0, 2,
+        4, 7, 6,
+        0, 4, 5,
+        1, 5, 2,
+        2, 6, 3,
+        4, 0, 3,
+        3, 0, 2,
+        5, 4, 6,
+        1, 0, 5,
+        5, 6, 2,
+        6, 7, 3,
+        7, 4, 3
       ],
       shipColorData = [
-        0, 0, 1, 1,
-        0, 0, 1, 1,
-        0, 0, 1, 1,
-
-        1, 0, 1, 1,
-        1, 0, 1, 1,
-        1, 0, 1, 1,
-
+        1, 0, 0, 1,
         0, 1, 0, 1,
-        0, 1, 0, 1,
-        0, 1, 0, 1
+        0, 0, 1, 1,
+        1, 1, 0, 1,
+        0, 1, 1, 1,
+        1, 1, 1, 1,
+        0, 0, 0, 1,
+        1, 0, 1, 1
       ],
-      shipPositions,
+      shipVertices,
+      shipVertexPositions,
       shipColors;
 
-    shipPositions = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, shipPositions);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(shipPositionData),
+    shipVertices = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, shipVertices);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(shipVerticesData),
                   gl.STATIC_DRAW);
-    shipPositions.itemSize = 3;
-    shipPositions.numItems = shipPositionData.length / shipPositions.itemSize;
-    this.shipPositions = shipPositions;
+    shipVertices.itemSize = 3;
+    shipVertices.numItems = shipVerticesData.length / shipVertices.itemSize;
+    this.shipVertices = shipVertices;
+
+    shipVertexPositions = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shipVertexPositions);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(shipVertexPositionsData),
+                  gl.STATIC_DRAW);
+    shipVertexPositions.itemSize = 1;
+    shipVertexPositions.numItems = shipVertexPositionsData.length /
+      shipVertexPositions.itemSize;
+    this.shipVertexPositions = shipVertexPositions;
 
     shipColors = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, shipColors);
@@ -102,7 +120,8 @@ var Spaceship;
 
     // Draw the spaceship
     mat4.identity(modelMatrix);
-    mat4.translate(modelMatrix, modelMatrix, [-0, -2, -7]);
+    mat4.translate(modelMatrix, modelMatrix, [-2, -2, -6]);
+    mat4.scale(modelMatrix, modelMatrix, [0.6, 0.6, 0.6]);
     mat4.rotate(modelMatrix, modelMatrix, Math.PI * 90 / 180, [0, 1, 0]);
     mat4.translate(modelMatrix, modelMatrix, [0, -1, 0]);
     mat4.rotate(modelMatrix, modelMatrix, turnAngle, [1, 0, 0]);
@@ -112,7 +131,8 @@ var Spaceship;
     this.draw(gl);
   };
   Spaceship.prototype.draw = function (gl) {
-    var shipPositions = this.shipPositions,
+    var shipVertices = this.shipVertices,
+      shipVertexPositions = this.shipVertexPositions,
       positionHandle = this.positionHandle,
       shipColors = this.shipColors,
       colorHandle = this.colorHandle,
@@ -124,8 +144,8 @@ var Spaceship;
       projectionMatrix = this.projectionMatrix;
 
     // Pass in the position information
-    gl.bindBuffer(gl.ARRAY_BUFFER, shipPositions);
-    gl.vertexAttribPointer(positionHandle, shipPositions.itemSize, gl.FLOAT,
+    gl.bindBuffer(gl.ARRAY_BUFFER, shipVertices);
+    gl.vertexAttribPointer(positionHandle, shipVertices.itemSize, gl.FLOAT,
                            false, 0, 0);
     gl.enableVertexAttribArray(positionHandle);
 
@@ -151,7 +171,9 @@ var Spaceship;
     gl.uniformMatrix4fv(mvpMatrixHandle, false, mvpMatrix);
 
     // Draw the ship.
-    gl.drawArrays(gl.TRIANGLES, 0, shipPositions.numItems);
+    //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shipVertexPositions);
+    gl.drawElements(gl.TRIANGLES, shipVertexPositions.numItems,
+                    gl.UNSIGNED_SHORT, 0);
   };
   Spaceship.prototype.headLeft = function () {
     this.turnAngleTarget = -45 * Math.PI / 180;
