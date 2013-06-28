@@ -228,7 +228,7 @@ var Renderer;
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubePositionData),
                   gl.STATIC_DRAW);
     cubePositions.itemSize = 3;
-    cubePositions.numItems = 36;
+    cubePositions.numItems = cubePositionData.length / cubePositions.itemSize;
     this.cubePositions = cubePositions;
 
     cubeColors = gl.createBuffer();
@@ -236,7 +236,7 @@ var Renderer;
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeColorData),
                   gl.STATIC_DRAW);
     cubeColors.itemSize = 4;
-    cubeColors.numItems = 36;
+    cubeColors.numItems = cubeColorData.length / cubeColors.itemSize;
     this.cubeColors = cubeColors;
 
     cubeNormals = gl.createBuffer();
@@ -244,7 +244,7 @@ var Renderer;
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeNormalData),
                   gl.STATIC_DRAW);
     cubeNormals.itemSize = 3;
-    cubeNormals.numItems = 36;
+    cubeNormals.numItems = cubeNormalData.length / cubeNormals.itemSize;
     this.cubeNormals = cubeNormals;
 
     this.lightModelMatrix = mat4.create();
@@ -409,7 +409,7 @@ var Renderer;
 
     // Calculate position of the light. Rotate and then push into the distance.
     mat4.identity(lightModelMatrix, 0);
-    mat4.translate(lightModelMatrix, lightModelMatrix, [2, 2, -4]);
+    mat4.translate(lightModelMatrix, lightModelMatrix, [-1, -2, -4]);
 
     mat4.multiply(lightPosInWorldSpace, lightModelMatrix, lightPosInModelSpace);
     mat4.multiply(lightPosInEyeSpace, viewMatrix, lightPosInWorldSpace);
